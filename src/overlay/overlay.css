@@ -1,0 +1,43 @@
+/* Tailwind CSS integration for Overlay component */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Container styles */
+#cue-overlay-container {
+  @apply fixed bottom-6 right-6 z-[2147483647] 
+         bg-white/90 text-gray-900 
+         p-4 flex flex-col gap-3 
+         rounded-xl shadow-xl border border-gray-200;
+
+  contain: layout style paint;
+  isolation: isolate;
+  width: 320px;
+  max-height: 70vh;
+  backdrop-filter: saturate(180%) blur(12px);
+}
+
+/* Ensure overlay is isolated and doesn't interfere with page content */
+#cue-overlay-container * {
+  box-sizing: border-box;
+}
+
+/* Input area */
+#cue-overlay-container textarea {
+  @apply w-full min-h-[100px] resize-y rounded-md border border-gray-300 p-2 text-sm;
+}
+
+/* Action buttons */
+#cue-overlay-container .cue-buttons {
+  @apply flex gap-2;
+}
+
+#cue-overlay-container button {
+  @apply px-3 py-1.5 rounded-md border border-gray-300 text-sm 
+         bg-white hover:bg-gray-100 active:bg-gray-200 transition;
+}
+
+/* Output area */
+#cue-overlay-container .cue-output {
+  @apply text-sm whitespace-pre-wrap border border-gray-200 rounded-md p-2 max-h-48 overflow-auto bg-gray-50;
+}
