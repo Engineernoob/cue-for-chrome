@@ -5,13 +5,9 @@
 
 /* Container styles */
 #cue-overlay-container {
-  position: fixed;
-  bottom: 1.5rem; /* Tailwind's bottom-6 */
-  right: 1.5rem; /* Tailwind's right-6 */
-  z-index: 2147483647;
-
-  @apply bg-white/90 text-gray-900 
-         p-4 flex flex-col gap-3 
+  @apply fixed bottom-6 right-6 z-[2147483647]
+         bg-white bg-opacity-90 text-gray-900
+         p-4 flex flex-col gap-3
          rounded-xl shadow-xl border border-gray-200;
 
   contain: layout style paint;
@@ -21,13 +17,6 @@
   backdrop-filter: saturate(180%) blur(12px);
 }
 
-/* Dark mode container */
-@media (prefers-color-scheme: dark) {
-  #cue-overlay-container {
-    @apply bg-gray-900/90 text-gray-100 border-gray-700;
-  }
-}
-
 /* Ensure overlay is isolated and doesn't interfere with page content */
 #cue-overlay-container * {
   box-sizing: border-box;
@@ -35,38 +24,26 @@
 
 /* Input area */
 #cue-overlay-container textarea {
-  @apply w-full min-h-[100px] resize-y rounded-md border border-gray-300 p-2 text-sm;
+  @apply w-full min-h-[100px] resize-y
+         rounded-md border border-gray-300 p-2 text-sm
+         focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
-@media (prefers-color-scheme: dark) {
-  #cue-overlay-container textarea {
-    @apply bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400;
-  }
-}
-
-/* Action buttons */
+/* Action buttons wrapper */
 #cue-overlay-container .cue-buttons {
   @apply flex gap-2;
 }
 
+/* Action buttons */
 #cue-overlay-container button {
-  @apply px-3 py-1.5 rounded-md border border-gray-300 text-sm 
+  @apply px-3 py-1.5 rounded-md border border-gray-300 text-sm
          bg-white hover:bg-gray-100 active:bg-gray-200 transition;
-}
-
-@media (prefers-color-scheme: dark) {
-  #cue-overlay-container button {
-    @apply bg-gray-800 border-gray-600 text-gray-200 hover:bg-gray-700 active:bg-gray-600;
-  }
 }
 
 /* Output area */
 #cue-overlay-container .cue-output {
-  @apply text-sm whitespace-pre-wrap border border-gray-200 rounded-md p-2 max-h-48 overflow-auto bg-gray-50;
+  @apply text-sm whitespace-pre-wrap
+         border border-gray-200 rounded-md p-2
+         max-h-48 overflow-auto bg-gray-50;
 }
 
-@media (prefers-color-scheme: dark) {
-  #cue-overlay-container .cue-output {
-    @apply bg-gray-800 border-gray-700 text-gray-100;
-  }
-}
