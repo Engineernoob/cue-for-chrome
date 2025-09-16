@@ -12,14 +12,15 @@ export default defineConfig({
     rollupOptions: {
       input: {
         background: resolve(__dirname, "src/background/background.ts"),
-        contentScript: resolve(__dirname, "src/content/contentScript.tsx"),
+        contentScript: resolve(__dirname, "src/content/contentScript.js"),
         overlay: resolve(__dirname, "src/overlay/Overlay.tsx"),
-    overlayCSS: resolve(__dirname, "src/overlay/overlay.css"),
+        overlayCSS: resolve(__dirname, "src/overlay/overlay.css"),
       },
       output: {
         entryFileNames: (chunk) => {
           if (chunk.name === "background") return "background/background.js";
-          if (chunk.name === "contentScript" || chunk.name === "overlay") return "[name].js";
+          if (chunk.name === "contentScript" || chunk.name === "overlay")
+            return "[name].js";
           return "assets/[name].js";
         },
         chunkFileNames: "assets/[name].js",
@@ -34,7 +35,6 @@ export default defineConfig({
     sourcemap: true,
     minify: false, // readable code for debugging
     copyPublicDir: true, // Copy public/ (icons) to dist
-    
   },
   resolve: {
     alias: {
