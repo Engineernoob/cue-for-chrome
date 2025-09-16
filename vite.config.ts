@@ -12,24 +12,29 @@ export default defineConfig({
     rollupOptions: {
       input: {
         background: resolve(__dirname, "src/background/background.ts"),
-        content: resolve(__dirname, "src/content/contentScript.tsx"),
-        overlay: resolve(__dirname, "src/index.tsx"),
+        contentScript: resolve(__dirname, "src/content/contentScript.tsx"),
+        overlay: resolve(__dirname, "src/overlay/Overlay.tsx"),
+    overlayCSS: resolve(__dirname, "src/overlay/overlay.css"),
       },
       output: {
         entryFileNames: (chunk) => {
           if (chunk.name === "background") return "background/background.js";
-          if (chunk.name === "content") return "content/content.js";
-          if (chunk.name === "overlay") return "overlay/overlay.js";
+          if (chunk.name === "contentScript" || chunk.name === "overlay") return "[name].js";
           return "assets/[name].js";
         },
         chunkFileNames: "assets/[name].js",
-        assetFileNames: "assets/[name].[ext]",
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith("overlay.css")) return "overlay.css";
+          return "assets/[name].[ext]";
+        },
       },
     },
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: true,
     minify: false, // readable code for debugging
+    copyPublicDir: true, // Copy public/ (icons) to dist
+    
   },
   resolve: {
     alias: {

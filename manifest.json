@@ -17,7 +17,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content/content.js"],
+      "js": ["contentScript.js"],
       "run_at": "document_end"
     }
   ],
@@ -30,11 +30,14 @@
       "description": "Toggle the AI overlay"
     }
   },
+  "action": {
+    "default_title": "Cue for Chrome"
+  },
   "web_accessible_resources": [
     {
       "resources": [
-        "overlay/overlay.js",
-        "assets/overlay.css"
+        "overlay.js",
+        "assets/overlayCSS.css"
       ],
       "matches": ["<all_urls>"]
     }
@@ -45,5 +48,6 @@
     "128": "icon128.png"
   }
 }
+
 
 

@@ -35,7 +35,7 @@ function createOverlayContainer(): HTMLDivElement {
 
   // Load React overlay bundle (built from index.tsx)
   const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("overlay/overlay.js");
+  script.src = chrome.runtime.getURL("overlay.js");
   script.type = "module";
   container.appendChild(script);
 
