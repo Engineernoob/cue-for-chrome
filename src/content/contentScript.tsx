@@ -1,6 +1,3 @@
-import { createRoot, Root } from "react-dom/client";
-import Overlay from "@/overlay/Overlay";
-
 interface Message {
   action: string;
   [key: string]: any;
@@ -10,68 +7,48 @@ interface SendResponse {
   (response?: any): void;
 }
 
-// Global overlay refs
+// Global overlay container reference
 let overlayContainer: HTMLDivElement | null = null;
-let overlayRoot: Root | null = null;
 
 // Inject overlay.css into page <head>
 function injectOverlayCSS(): void {
   const existingLink = document.getElementById(
     "cue-overlay-css"
   ) as HTMLLinkElement;
-  if (existingLink) return; // already injected
+  if (existingLink) return;
 
   const link = document.createElement("link");
   link.id = "cue-overlay-css";
   link.rel = "stylesheet";
   link.type = "text/css";
-  link.href = chrome.runtime.getURL("assets/overlay.css"); // Vite outputs here
+  link.href = chrome.runtime.getURL("assets/overlay.css"); // built by Vite
   document.head.appendChild(link);
 }
 
-// Function to create overlay container + mount React
+// Function to create overlay container
 function createOverlayContainer(): HTMLDivElement {
-  injectOverlayCSS(); // ensure styles are loaded
+  injectOverlayCSS();
 
   const container = document.createElement("div");
   container.id = "cue-overlay-container";
-  container.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 400px;
-    height: 500px;
-    z-index: 2147483647;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    overflow: hidden;
-    pointer-events: auto;
-  `;
-
   document.body.appendChild(container);
 
-  // Mount React Overlay
-  overlayRoot = createRoot(container);
-  overlayRoot.render(<Overlay />);
+  // Load React overlay bundle (built from index.tsx)
+  const script = document.createElement("script");
+  script.src = chrome.runtime.getURL("overlay/overlay.js");
+  script.type = "module";
+  container.appendChild(script);
 
   return container;
 }
 
-// Function to toggle overlay
+// Toggle overlay
 function toggleOverlay(): void {
   if (overlayContainer) {
-    // Remove if it already exists
-    overlayRoot?.unmount();
     overlayContainer.remove();
     overlayContainer = null;
-    overlayRoot = null;
     return;
   }
-
-  // Create + render if none exists
   overlayContainer = createOverlayContainer();
 }
 
@@ -88,10 +65,8 @@ chrome.runtime.onMessage.addListener(
     }
     if (message.action === "hideOverlay") {
       if (overlayContainer) {
-        overlayRoot?.unmount();
         overlayContainer.remove();
         overlayContainer = null;
-        overlayRoot = null;
       }
       sendResponse({ status: "overlayHidden" });
     }
@@ -99,7 +74,7 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
-// Optional: restore overlay if extension says it should start visible
+// Restore overlay if needed
 chrome.runtime.sendMessage({ action: "checkOverlayState" }, (response: any) => {
   if (response?.showOverlay) {
     toggleOverlay();
