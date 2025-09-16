@@ -17,8 +17,7 @@ function injectOverlayCSS(): void {
   link.id = "cue-overlay-css";
   link.rel = "stylesheet";
   link.type = "text/css";
-  // NOTE: vite outputs overlay.css under assets/
-  link.href = chrome.runtime.getURL("assets/overlay.css");
+  link.href = chrome.runtime.getURL("assets/overlay.css"); // vite builds here
   document.head.appendChild(link);
 }
 
@@ -30,11 +29,12 @@ function createOverlayContainer(): HTMLDivElement {
   container.id = "cue-overlay-container";
   document.body.appendChild(container);
 
-  // Load React overlay bundle (Vite builds it to overlay/overlay.js)
+  // Load React overlay bundle (built to overlay/overlay.js)
   const script = document.createElement("script");
   script.src = chrome.runtime.getURL("overlay/overlay.js");
   script.type = "module";
-  document.body.appendChild(script); // append to body, not inside container
+  script.defer = true; // ensure runs after DOM is ready
+  document.body.appendChild(script);
 
   return container;
 }
@@ -44,9 +44,13 @@ function toggleOverlay(): void {
   if (overlayContainer) {
     overlayContainer.remove();
     overlayContainer = null;
+    // Persist state
+    chrome.storage.local.set({ overlayVisible: false });
     return;
   }
   overlayContainer = createOverlayContainer();
+  // Persist state
+  chrome.storage.local.set({ overlayVisible: true });
 }
 
 // Listen for background messages
@@ -64,6 +68,7 @@ chrome.runtime.onMessage.addListener(
       if (overlayContainer) {
         overlayContainer.remove();
         overlayContainer = null;
+        chrome.storage.local.set({ overlayVisible: false });
       }
       sendResponse({ status: "overlayHidden" });
     }
@@ -71,9 +76,9 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
-// Restore overlay if needed
-chrome.runtime.sendMessage({ action: "checkOverlayState" }, (response: any) => {
-  if (response?.showOverlay) {
+// Restore overlay if user left it enabled
+chrome.storage.local.get("overlayVisible", (data) => {
+  if (data.overlayVisible) {
     toggleOverlay();
   }
 });

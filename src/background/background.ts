@@ -20,16 +20,24 @@
             // Inject the content script dynamically
             await chrome.scripting.executeScript({
               target: { tabId },
-              files: ["content/content.js"], // path to your built content script
+              files: ["contentScript.js"], // fixed path from Vite build
             });
 
             // Retry toggle after injection
-            chrome.tabs.sendMessage(tabId, { action: "toggleOverlay" });
+            chrome.tabs.sendMessage(tabId, { action: "toggleOverlay" }, () => {
+              chrome.storage.local.set({ overlayVisible: true });
+            });
           } catch (injectErr) {
             console.error("Failed to inject content script:", injectErr);
           }
         } else if (response) {
           console.log("Overlay toggled successfully");
+
+          // Toggle state persistence
+          chrome.storage.local.get("overlayVisible", (data) => {
+            const newState = !data.overlayVisible;
+            chrome.storage.local.set({ overlayVisible: newState });
+          });
         }
       }
     );
@@ -77,7 +85,11 @@
           sendResponse({ status: "aiUnavailable" });
         }
       } else if (message.action === "checkOverlayState") {
-        sendResponse({ showOverlay: false });
+        // Respond with persisted state
+        chrome.storage.local.get("overlayVisible", (data) => {
+          sendResponse({ showOverlay: data.overlayVisible || false });
+        });
+        return true; // keep channel open for async response
       }
       return true;
     }
