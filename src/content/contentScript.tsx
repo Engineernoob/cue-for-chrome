@@ -7,25 +7,22 @@ interface SendResponse {
   (response?: any): void;
 }
 
-// Global overlay container reference
 let overlayContainer: HTMLDivElement | null = null;
 
 // Inject overlay.css into page <head>
 function injectOverlayCSS(): void {
-  const existingLink = document.getElementById(
-    "cue-overlay-css"
-  ) as HTMLLinkElement;
-  if (existingLink) return;
+  if (document.getElementById("cue-overlay-css")) return;
 
   const link = document.createElement("link");
   link.id = "cue-overlay-css";
   link.rel = "stylesheet";
   link.type = "text/css";
-  link.href = chrome.runtime.getURL("assets/overlay.css"); // built by Vite
+  // NOTE: vite outputs overlay.css under assets/
+  link.href = chrome.runtime.getURL("assets/overlay.css");
   document.head.appendChild(link);
 }
 
-// Function to create overlay container
+// Create overlay container and inject overlay bundle
 function createOverlayContainer(): HTMLDivElement {
   injectOverlayCSS();
 
@@ -33,16 +30,16 @@ function createOverlayContainer(): HTMLDivElement {
   container.id = "cue-overlay-container";
   document.body.appendChild(container);
 
-  // Load React overlay bundle (built from index.tsx)
+  // Load React overlay bundle (Vite builds it to overlay/overlay.js)
   const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("overlay.js");
+  script.src = chrome.runtime.getURL("overlay/overlay.js");
   script.type = "module";
-  container.appendChild(script);
+  document.body.appendChild(script); // append to body, not inside container
 
   return container;
 }
 
-// Toggle overlay
+// Toggle overlay on/off
 function toggleOverlay(): void {
   if (overlayContainer) {
     overlayContainer.remove();
@@ -52,7 +49,7 @@ function toggleOverlay(): void {
   overlayContainer = createOverlayContainer();
 }
 
-// Message listener from background script
+// Listen for background messages
 chrome.runtime.onMessage.addListener(
   (
     message: Message,

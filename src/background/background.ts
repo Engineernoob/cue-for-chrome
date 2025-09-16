@@ -1,22 +1,39 @@
 // Background service worker for cue-for-chrome extension
 // Handles keyboard shortcuts, message passing, and AI API coordination
 
-(function() {
-  // Helper types (using Chrome APIs)
+(function () {
   type TabId = number;
 
-  // Helper: toggle overlay with safe injection
+  // Helper: ensure content script is injected, then toggle overlay
   async function toggleOverlay(tabId: TabId): Promise<void> {
-    chrome.tabs.sendMessage(tabId, { action: "toggleOverlay" }, (response) => {
-      if (chrome.runtime.lastError) {
-        // Content script should be auto-injected; log if missing (e.g., CSP block)
-        console.error("Content script unavailable:", chrome.runtime.lastError.message);
-      } else if (response) {
-        console.log("Overlay toggled successfully");
-      }
-    });
-  }
+    chrome.tabs.sendMessage(
+      tabId,
+      { action: "toggleOverlay" },
+      async (response) => {
+        if (chrome.runtime.lastError) {
+          console.warn(
+            "Content script unavailable, injecting now…",
+            chrome.runtime.lastError.message
+          );
 
+          try {
+            // Inject the content script dynamically
+            await chrome.scripting.executeScript({
+              target: { tabId },
+              files: ["content/content.js"], // path to your built content script
+            });
+
+            // Retry toggle after injection
+            chrome.tabs.sendMessage(tabId, { action: "toggleOverlay" });
+          } catch (injectErr) {
+            console.error("Failed to inject content script:", injectErr);
+          }
+        } else if (response) {
+          console.log("Overlay toggled successfully");
+        }
+      }
+    );
+  }
 
   // Listen for the toggle-overlay command (Cmd/Ctrl+Shift+U)
   chrome.commands.onCommand.addListener(async (command: string) => {
@@ -42,8 +59,7 @@
     }
   });
 
-
-  // Listen for messages from content script
+  // Handle messages from content script
   chrome.runtime.onMessage.addListener(
     (
       message: { action: string; [key: string]: any },
@@ -51,27 +67,25 @@
       sendResponse: (response?: any) => void
     ) => {
       if (message.action === "aiRequest") {
-        // Improved: Safer check for experimental Chrome AI
         if ((chrome as any).ai) {
           console.log("Chrome AI available");
           sendResponse({ status: "aiAvailable" });
         } else {
-          console.warn("Chrome AI not available - experimental feature may be disabled");
+          console.warn(
+            "Chrome AI not available - experimental feature may be disabled"
+          );
           sendResponse({ status: "aiUnavailable" });
         }
       } else if (message.action === "checkOverlayState") {
-        // Added: Respond to content script's state check (prevents unhandled rejection)
-        sendResponse({ showOverlay: false }); // Default: don't show on load; manage via storage if needed
+        sendResponse({ showOverlay: false });
       }
-      return true; // Keep message channel open for async response
+      return true;
     }
   );
 
-
   // Log startup status
-  chrome.runtime.onStartup.addListener(async () => {
+  chrome.runtime.onStartup.addListener(() => {
     console.log("Cue for Chrome extension started");
-    // Improved: Safer AI check
     if ((chrome as any).ai) {
       console.log("Chrome AI APIs available");
     } else {
@@ -80,5 +94,4 @@
       );
     }
   });
-
 })();
