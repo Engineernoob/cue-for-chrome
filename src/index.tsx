@@ -26,17 +26,10 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-4 text-center text-red-600">
-          <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
-          <p className="text-sm mb-4">
-            The overlay encountered an error. Try reloading the page.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Reload Page
-          </button>
+        <div id="cue-error">
+          <h2>Something went wrong</h2>
+          <p>The overlay encountered an error. Try reloading the page.</p>
+          <button onClick={() => window.location.reload()}>Reload Page</button>
         </div>
       );
     }
@@ -105,22 +98,13 @@ const App: React.FC = () => {
 
   if (!isInitialized) {
     return (
-      <div className="flex items-center justify-center h-full p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">
-            Initializing Cue for Chrome...
-          </p>
-          {aiStatus === "checking" ? (
-            <p className="text-xs text-gray-500 mt-1">
-              Checking AI availability
-            </p>
-          ) : aiStatus === "unavailable" ? (
-            <p className="text-xs text-red-500 mt-1">
-              AI unavailable — using simulation mode
-            </p>
-          ) : null}
-        </div>
+      <div id="cue-init">
+        <div className="spinner"></div>
+        <p>Initializing Cue for Chrome...</p>
+        {aiStatus === "checking" && <p>Checking AI availability…</p>}
+        {aiStatus === "unavailable" && (
+          <p className="warning">AI unavailable — using simulation mode</p>
+        )}
       </div>
     );
   }
@@ -129,7 +113,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <Overlay />
       {aiStatus === "unavailable" && (
-        <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded text-xs max-w-xs">
+        <div id="cue-warning">
           AI APIs unavailable. Enable in{" "}
           <code>chrome://flags/#experimental-ai</code>. Using simulation mode.
         </div>

@@ -30,7 +30,6 @@ const Overlay: React.FC<OverlayProps> = () => {
     "summarize" | "proofread" | "rewrite" | "translate" | null
   >(null);
 
-  // --- AI Status Badge ---
   const [aiReady, setAiReady] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -108,56 +107,39 @@ const Overlay: React.FC<OverlayProps> = () => {
   return (
     <div id="cue-overlay-container">
       {/* Header */}
-      <div className="flex justify-between items-center border-b pb-2">
-        <h1 className="text-base font-semibold">Cue for Chrome</h1>
-        <div className="flex items-center gap-2">
-          <span
-            className={`px-2 py-1 text-xs rounded ${
-              aiReady
-                ? "bg-green-100 text-green-800"
-                : "bg-yellow-100 text-yellow-800"
-            }`}
-          >
+      <div className="cue-header">
+        <h1>Cue for Chrome</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span className={`cue-badge ${aiReady ? "ready" : "unavailable"}`}>
             {aiReady === null
               ? "Checking…"
               : aiReady
               ? "AI Ready ✅"
               : "AI Unavailable ⚠️"}
           </span>
-          <button
-            onClick={closeOverlay}
-            className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-          >
-            ×
-          </button>
+          <button onClick={closeOverlay}>×</button>
         </div>
       </div>
 
       {/* Mode Selection */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Select Mode:</label>
-        <div className="flex gap-2 mb-1">
+      <div className="cue-modes">
+        <label>Select Mode:</label>
+        <div className="buttons">
           {Object.values(Mode).map((mode) => (
             <button
               key={mode}
               onClick={() => handleModeChange(mode)}
-              className={`px-3 py-1 rounded text-xs ${
-                currentMode === mode
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+              className={currentMode === mode ? "active" : ""}
             >
               {MODE_LABELS[mode]}
             </button>
           ))}
         </div>
-        <p className="text-xs text-gray-500">
-          Current: {MODE_LABELS[currentMode]}
-        </p>
+        <p>Current: {MODE_LABELS[currentMode]}</p>
       </div>
 
       {/* Input */}
-      <label className="block text-sm font-medium mt-2">Input Text:</label>
+      <label>Input Text:</label>
       <textarea
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
@@ -168,7 +150,7 @@ const Overlay: React.FC<OverlayProps> = () => {
       />
 
       {/* Buttons */}
-      <div className="cue-buttons mt-2">
+      <div className="cue-buttons">
         <button
           onClick={() => handleAIAction("summarize")}
           disabled={isLoading}
@@ -194,20 +176,15 @@ const Overlay: React.FC<OverlayProps> = () => {
 
       {/* Output */}
       {outputText && (
-        <div className="mt-3">
-          <label className="block text-sm font-medium">Output:</label>
+        <div>
+          <label>Output:</label>
           <div className="cue-output">{outputText}</div>
-          <button
-            onClick={() => setOutputText("")}
-            className="mt-1 text-xs text-blue-500 hover:underline"
-          >
-            Clear
-          </button>
+          <button onClick={() => setOutputText("")}>Clear</button>
         </div>
       )}
 
       {/* Footer */}
-      <div className="text-[10px] text-gray-500 text-center border-t pt-2 mt-2">
+      <div className="cue-footer">
         Client-side AI processing – Privacy preserved. Press Ctrl+Shift+Q to
         toggle.
       </div>

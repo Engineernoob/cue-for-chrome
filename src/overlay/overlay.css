@@ -1,49 +1,76 @@
-/* Tailwind CSS integration for Overlay component */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Container styles */
-#cue-overlay-container {
-  @apply fixed bottom-6 right-6 z-[2147483647]
-         bg-white bg-opacity-90 text-gray-900
-         p-4 flex flex-col gap-3
-         rounded-xl shadow-xl border border-gray-200;
-
-  contain: layout style paint;
-  isolation: isolate;
-  width: 320px;
-  max-height: 70vh;
-  backdrop-filter: saturate(180%) blur(12px);
+/* Header */
+#cue-overlay-container .cue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 4px;
 }
 
-/* Ensure overlay is isolated and doesn't interfere with page content */
-#cue-overlay-container * {
-  box-sizing: border-box;
+#cue-overlay-container .cue-header h1 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
 }
 
-/* Input area */
-#cue-overlay-container textarea {
-  @apply w-full min-h-[100px] resize-y
-         rounded-md border border-gray-300 p-2 text-sm
-         focus:outline-none focus:ring-2 focus:ring-blue-500;
+#cue-overlay-container .cue-header button {
+  font-size: 18px;
+  line-height: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #555;
+}
+#cue-overlay-container .cue-header button:hover {
+  color: #000;
 }
 
-/* Action buttons wrapper */
-#cue-overlay-container .cue-buttons {
-  @apply flex gap-2;
+/* AI status badge */
+#cue-overlay-container .cue-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+#cue-overlay-container .cue-badge.ready {
+  background: #d1fae5;
+  color: #065f46;
+}
+#cue-overlay-container .cue-badge.unavailable {
+  background: #fef3c7;
+  color: #92400e;
 }
 
-/* Action buttons */
-#cue-overlay-container button {
-  @apply px-3 py-1.5 rounded-md border border-gray-300 text-sm
-         bg-white hover:bg-gray-100 active:bg-gray-200 transition;
+/* Mode selector */
+#cue-overlay-container .cue-modes {
+  margin-top: 6px;
 }
-
-/* Output area */
-#cue-overlay-container .cue-output {
-  @apply text-sm whitespace-pre-wrap
-         border border-gray-200 rounded-md p-2
-         max-h-48 overflow-auto bg-gray-50;
+#cue-overlay-container .cue-modes label {
+  font-size: 12px;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
 }
-
+#cue-overlay-container .cue-modes .buttons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+#cue-overlay-container .cue-modes button {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  cursor: pointer;
+  background: #eee;
+  color: #333;
+}
+#cue-overlay-container .cue-modes button.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+#cue-overlay-container .cue-modes p {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+}
