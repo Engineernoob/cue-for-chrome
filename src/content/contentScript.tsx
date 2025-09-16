@@ -1,3 +1,6 @@
+import { createRoot, Root } from "react-dom/client";
+import Overlay from "@/overlay/Overlay";
+
 interface Message {
   action: string;
   [key: string]: any;
@@ -7,13 +10,31 @@ interface SendResponse {
   (response?: any): void;
 }
 
-// Global overlay container reference
+// Global overlay refs
 let overlayContainer: HTMLDivElement | null = null;
+let overlayRoot: Root | null = null;
 
-// Function to create overlay container
+// Inject overlay.css into page <head>
+function injectOverlayCSS(): void {
+  const existingLink = document.getElementById(
+    "cue-overlay-css"
+  ) as HTMLLinkElement;
+  if (existingLink) return; // already injected
+
+  const link = document.createElement("link");
+  link.id = "cue-overlay-css";
+  link.rel = "stylesheet";
+  link.type = "text/css";
+  link.href = chrome.runtime.getURL("assets/overlay.css"); // Vite outputs here
+  document.head.appendChild(link);
+}
+
+// Function to create overlay container + mount React
 function createOverlayContainer(): HTMLDivElement {
-  const container = document.createElement('div');
-  container.id = 'cue-overlay-container';
+  injectOverlayCSS(); // ensure styles are loaded
+
+  const container = document.createElement("div");
+  container.id = "cue-overlay-container";
   container.style.cssText = `
     position: fixed;
     top: 20px;
@@ -25,52 +46,61 @@ function createOverlayContainer(): HTMLDivElement {
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: none;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow: hidden;
     pointer-events: auto;
   `;
-  
-  // To make it "invisible" to screen-sharing (basic approach: high z-index, but for true invisibility,
-  // could use CSS like @supports not (display: contents) or canvas, but start simple)
-  container.style.setProperty('isolation', 'isolate'); // Isolate from parent styles
-  
-  // Placeholder content until React is mounted
-  const placeholder = document.createElement('div');
-  placeholder.style.cssText = 'padding: 20px; text-align: center; color: #666;';
-  placeholder.textContent = 'Cue Overlay Loading... (React will mount here)';
-  container.appendChild(placeholder);
-  
+
   document.body.appendChild(container);
+
+  // Mount React Overlay
+  overlayRoot = createRoot(container);
+  overlayRoot.render(<Overlay />);
+
   return container;
 }
 
-// Function to toggle overlay visibility
+// Function to toggle overlay
 function toggleOverlay(): void {
-  if (!overlayContainer) {
-    overlayContainer = createOverlayContainer();
+  if (overlayContainer) {
+    // Remove if it already exists
+    overlayRoot?.unmount();
+    overlayContainer.remove();
+    overlayContainer = null;
+    overlayRoot = null;
+    return;
   }
-  
-  if (overlayContainer.style.display === 'none') {
-    overlayContainer.style.display = 'block';
-  } else {
-    overlayContainer.style.display = 'none';
-  }
+
+  // Create + render if none exists
+  overlayContainer = createOverlayContainer();
 }
 
-// Listen for messages from background script
-// Listen for messages from background script
-chrome.runtime.onMessage.addListener((message: Message, _sender: chrome.runtime.MessageSender, sendResponse: SendResponse) => {
-  if (message.action === 'toggleOverlay') {
-    toggleOverlay();
-    sendResponse({ status: 'overlayToggled' });
+// Message listener from background script
+chrome.runtime.onMessage.addListener(
+  (
+    message: Message,
+    _sender: chrome.runtime.MessageSender,
+    sendResponse: SendResponse
+  ) => {
+    if (message.action === "toggleOverlay") {
+      toggleOverlay();
+      sendResponse({ status: "overlayToggled" });
+    }
+    if (message.action === "hideOverlay") {
+      if (overlayContainer) {
+        overlayRoot?.unmount();
+        overlayContainer.remove();
+        overlayContainer = null;
+        overlayRoot = null;
+      }
+      sendResponse({ status: "overlayHidden" });
+    }
+    return true;
   }
-  return true;
-});
+);
 
-// Initial check if overlay should be shown (e.g., from storage)
-// Initial check if overlay should be shown (e.g., from storage)
-chrome.runtime.sendMessage({ action: 'checkOverlayState' }, (response: any) => {
+// Optional: restore overlay if extension says it should start visible
+chrome.runtime.sendMessage({ action: "checkOverlayState" }, (response: any) => {
   if (response?.showOverlay) {
     toggleOverlay();
   }

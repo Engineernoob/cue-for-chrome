@@ -34,17 +34,13 @@ const Overlay: React.FC<OverlayProps> = () => {
   const [aiReady, setAiReady] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Initial check
     setAiReady(isAIAvailable());
 
-    // Poll every 5s until AI becomes available
     const interval = setInterval(() => {
       if (!aiReady) {
         const available = isAIAvailable();
         setAiReady(available);
-        if (available) {
-          clearInterval(interval); // stop once AI is ready
-        }
+        if (available) clearInterval(interval);
       }
     }, 5000);
 
@@ -110,12 +106,11 @@ const Overlay: React.FC<OverlayProps> = () => {
   };
 
   return (
-    <div className="w-full h-full bg-white text-gray-900 p-4 flex flex-col">
+    <div id="cue-overlay-container">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4 border-b pb-2">
-        <h1 className="text-lg font-semibold">Cue for Chrome</h1>
+      <div className="flex justify-between items-center border-b pb-2">
+        <h1 className="text-base font-semibold">Cue for Chrome</h1>
         <div className="flex items-center gap-2">
-          {/* AI Status Badge */}
           <span
             className={`px-2 py-1 text-xs rounded ${
               aiReady
@@ -139,14 +134,14 @@ const Overlay: React.FC<OverlayProps> = () => {
       </div>
 
       {/* Mode Selection */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Select Mode:</label>
-        <div className="flex space-x-2">
+      <div>
+        <label className="block text-sm font-medium mb-1">Select Mode:</label>
+        <div className="flex gap-2 mb-1">
           {Object.values(Mode).map((mode) => (
             <button
               key={mode}
               onClick={() => handleModeChange(mode)}
-              className={`px-3 py-1 rounded text-sm ${
+              className={`px-3 py-1 rounded text-xs ${
                 currentMode === mode
                   ? "bg-blue-500 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -156,86 +151,64 @@ const Overlay: React.FC<OverlayProps> = () => {
             </button>
           ))}
         </div>
-        <p className="text-xs text-gray-500 mt-1">
-          Current: {MODE_LABELS[currentMode]} - Tailored AI suggestions for{" "}
-          {MODE_LABELS[currentMode].toLowerCase()}
+        <p className="text-xs text-gray-500">
+          Current: {MODE_LABELS[currentMode]}
         </p>
       </div>
 
-      {/* Input Text Area */}
-      <div className="mb-4 flex-1">
-        <label className="block text-sm font-medium mb-2">Input Text:</label>
-        <textarea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder={`Enter text for ${MODE_LABELS[
-            currentMode
-          ].toLowerCase()}... (e.g., interview answers, code prompts, meeting notes)`}
-          className="w-full h-32 p-2 border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+      {/* Input */}
+      <label className="block text-sm font-medium mt-2">Input Text:</label>
+      <textarea
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+        placeholder={`Enter text for ${MODE_LABELS[
+          currentMode
+        ].toLowerCase()}…`}
+        disabled={isLoading}
+      />
+
+      {/* Buttons */}
+      <div className="cue-buttons mt-2">
+        <button
+          onClick={() => handleAIAction("summarize")}
           disabled={isLoading}
-        />
+        >
+          {isLoading && action === "summarize" ? "…" : "Summarize"}
+        </button>
+        <button
+          onClick={() => handleAIAction("proofread")}
+          disabled={isLoading}
+        >
+          {isLoading && action === "proofread" ? "…" : "Proofread"}
+        </button>
+        <button onClick={() => handleAIAction("rewrite")} disabled={isLoading}>
+          {isLoading && action === "rewrite" ? "…" : "Rewrite"}
+        </button>
+        <button
+          onClick={() => handleAIAction("translate")}
+          disabled={isLoading}
+        >
+          {isLoading && action === "translate" ? "…" : "Translate"}
+        </button>
       </div>
 
-      {/* AI Action Buttons */}
-      <div className="mb-4 space-y-2">
-        <label className="block text-sm font-medium mb-2">AI Actions:</label>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => handleAIAction("summarize")}
-            disabled={isLoading}
-            className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-          >
-            {isLoading && action === "summarize"
-              ? "Processing..."
-              : "Summarize"}
-          </button>
-          <button
-            onClick={() => handleAIAction("proofread")}
-            disabled={isLoading}
-            className="px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
-          >
-            {isLoading && action === "proofread"
-              ? "Processing..."
-              : "Proofread"}
-          </button>
-          <button
-            onClick={() => handleAIAction("rewrite")}
-            disabled={isLoading}
-            className="px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50"
-          >
-            {isLoading && action === "rewrite" ? "Processing..." : "Rewrite"}
-          </button>
-          <button
-            onClick={() => handleAIAction("translate")}
-            disabled={isLoading}
-            className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50"
-          >
-            {isLoading && action === "translate"
-              ? "Processing..."
-              : "Translate"}
-          </button>
-        </div>
-      </div>
-
-      {/* Output Display */}
+      {/* Output */}
       {outputText && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Output:</label>
-          <div className="p-3 bg-gray-50 border border-gray-200 rounded max-h-40 overflow-y-auto">
-            <p className="text-sm whitespace-pre-wrap">{outputText}</p>
-          </div>
+        <div className="mt-3">
+          <label className="block text-sm font-medium">Output:</label>
+          <div className="cue-output">{outputText}</div>
           <button
             onClick={() => setOutputText("")}
-            className="mt-2 text-xs text-blue-500 hover:underline"
+            className="mt-1 text-xs text-blue-500 hover:underline"
           >
-            Clear Output
+            Clear
           </button>
         </div>
       )}
 
       {/* Footer */}
-      <div className="text-xs text-gray-500 text-center border-t pt-2">
-        Client-side AI processing - Privacy preserved. Press Ctrl+Shift+Q to
+      <div className="text-[10px] text-gray-500 text-center border-t pt-2 mt-2">
+        Client-side AI processing – Privacy preserved. Press Ctrl+Shift+Q to
         toggle.
       </div>
     </div>
